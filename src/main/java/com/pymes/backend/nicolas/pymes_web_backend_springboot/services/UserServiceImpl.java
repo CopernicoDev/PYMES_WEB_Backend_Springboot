@@ -3,17 +3,23 @@ package com.pymes.backend.nicolas.pymes_web_backend_springboot.services;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.pymes.backend.nicolas.pymes_web_backend_springboot.models.User;
+import com.pymes.backend.nicolas.pymes_web_backend_springboot.repositories.UserRepository;
 
+@Service
 public class UserServiceImpl implements UserService {
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Override
     @Transactional(readOnly = true)
     public List<User> findAllUsers() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'findAllUsers'");
+        return (List<User>) userRepository.findAllUsers();
     }
 
     @Override

@@ -84,16 +84,22 @@ public class ServiceTest {
 
     @Test
     void testFindByIdNotFound() {
+        // When - usuario no existente
         when(userRepository.findById(99L)).thenReturn(Optional.empty());
 
         Optional<User> res = userService.findById(99L);
+
+        // Then
         assertTrue(res.isEmpty());
         verify(userRepository).findById(99L);
     }
 
     @Test
     void testSave() {
+        // Given - usuario existente
         User toSave = new User(); toSave.setUsername("Nuevo");
+
+        // When
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
             User arg = invocation.getArgument(0);
             arg.setId(5L);
@@ -101,6 +107,8 @@ public class ServiceTest {
         });
 
         User saved = userService.save(toSave);
+
+        // Then
         assertNotNull(saved);
         assertEquals(5L, saved.getId());
         verify(userRepository).save(any(User.class));
@@ -108,19 +116,23 @@ public class ServiceTest {
 
     @Test
     void testDeleteById() {
+        //When 
         doNothing().when(userRepository).deleteById(1L);
 
         userService.deleteById(1L);
 
+        //Then
         verify(userRepository).deleteById(1L);
     }
 
     @Test
     void testDeleteAll() {
+        //When
         doNothing().when(userRepository).deleteAll();
 
         userService.deleteAll();
 
+        //Then
         verify(userRepository).deleteAll();
     }
 

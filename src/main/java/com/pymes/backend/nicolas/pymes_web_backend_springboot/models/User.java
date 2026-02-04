@@ -19,6 +19,18 @@ public class User {
     private String password;
     private String role;
 
+    public User() {
+    }
+    
+    public User(Long id, String username, String email, String password, String role) {
+        this.id = id;
+        this.username = username;
+        this.email = email;
+        this.password = password;
+        this.role = role;
+    }
+
+
     public Long getId() {
         return id;
     }
@@ -49,6 +61,14 @@ public class User {
     public void setRole(String role) {
         this.role = role;
     }
+
+    @Override
+    public String toString() {
+        return "User [id=" + id + ", username=" + username + ", email=" + email + ", password=" + password + ", role="
+                + role + "]";
+    }
+
+    
 
     
 

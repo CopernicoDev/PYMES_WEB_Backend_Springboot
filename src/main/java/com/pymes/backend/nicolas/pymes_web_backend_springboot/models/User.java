@@ -1,9 +1,16 @@
 package com.pymes.backend.nicolas.pymes_web_backend_springboot.models;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 
 @Entity
@@ -17,17 +24,41 @@ public class User {
     private String username;
     private String email;
     private String password;
-    private String role;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+    name = "user_roles",
+    joinColumns = @JoinColumn(name = "user_id"),
+    inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    private Set<Role> roles = new HashSet<>();
+
+    public Set<Role> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(Set<Role> roles) {
+        this.roles = roles;
+    }
+
+    public void addRole(Role role) {
+        this.roles.add(role);
+    }
+
+    public void removeRole(Role role) {
+        this.roles.remove(role);
+    }
+
+
 
     public User() {
     }
     
-    public User(Long id, String username, String email, String password, String role) {
+    public User(Long id, String username, String email, String password) {
         this.id = id;
         this.username = username;
         this.email = email;
         this.password = password;
-        this.role = role;
     }
 
 
@@ -55,17 +86,11 @@ public class User {
     public void setPassword(String password) {
         this.password = password;
     }
-    public String getRole() {
-        return role;
-    }
-    public void setRole(String role) {
-        this.role = role;
-    }
 
     @Override
     public String toString() {
-        return "User [id=" + id + ", username=" + username + ", email=" + email + ", password=" + password + ", role="
-                + role + "]";
+        return "User [id=" + id + ", username=" + username + ", email=" + email + ", password=" + password + "]";
+
     }
 
     

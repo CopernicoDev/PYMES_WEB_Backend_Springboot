@@ -24,10 +24,8 @@ import com.pymes.backend.nicolas.pymes_web_backend_springboot.services.UserServi
 
 import tools.jackson.databind.ObjectMapper;
 
-
-
 @WebMvcTest(UserController.class)
-public class ControllerTest {
+public class UserControllerTest {
 
     @Autowired
     private MockMvc mockmvc;
@@ -36,17 +34,17 @@ public class ControllerTest {
     private UserService userService;
 
     ObjectMapper objectMapper;
-    
+
     @BeforeEach
     void setUp() {
         objectMapper = new ObjectMapper();
-        
+
     }
 
     @Test
     void testfindAllUsers() throws Exception {
-        //Given
-         // Given - crear datos inline
+        // Given
+        // Given - crear datos inline
         User u1 = new User();
         u1.setUsername("Nicolás");
         u1.setId(1L);
@@ -54,28 +52,28 @@ public class ControllerTest {
         User u2 = new User();
         u2.setUsername("Yaiza");
         u2.setId(2L);
-        java.util.List<User> users = List.of(u1,u2);
+        java.util.List<User> users = List.of(u1, u2);
 
         when(userService.findAllUsers()).thenReturn(users);
 
-        //When , Then 
+        // When , Then
         mockmvc.perform(get("/api/users").contentType(MediaType.APPLICATION_JSON))
-        .andExpect(status().isOk())
-        .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-        .andExpect(jsonPath("$.length()").value(users.size()))
-        .andExpect(jsonPath("$[0].username").value("Nicolás"))
-        .andExpect(jsonPath("$[1].username").value("Yaiza"));
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.length()").value(users.size()))
+                .andExpect(jsonPath("$[0].username").value("Nicolás"))
+                .andExpect(jsonPath("$[1].username").value("Yaiza"));
 
         verify(userService).findAllUsers();
         assertFalse(users.isEmpty());
-        assertEquals(2,users.size());
+        assertEquals(2, users.size());
         assertEquals("Nicolás", users.get(0).getUsername());
     }
 
     @Test
     void testfindById() throws Exception {
-        //Given
-         // Given - crear datos inline
+        // Given
+        // Given - crear datos inline
         User u1 = new User();
         u1.setUsername("Nicolás");
         u1.setId(1L);
@@ -86,14 +84,14 @@ public class ControllerTest {
 
         when(userService.findById(1L)).thenReturn(Optional.of(u1));
 
-        //When
+        // When
         mockmvc.perform(get("/api/users/search/1").contentType(MediaType.APPLICATION_JSON))
-        //Then
+                // Then
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.username").value("Nicolás"))
                 .andExpect(jsonPath("$.id").value(1L));
-                
+
         verify(userService).findById(1L);
     }
 
@@ -108,23 +106,22 @@ public class ControllerTest {
         u2.setUsername("Yaiza");
         u2.setId(2L);
 
-        //Given 
+        // Given
         when(userService.save(any())).then(invocation -> {
             User u = invocation.getArgument(0);
             u.setId(1L);
             return u;
         });
 
-        //When 
+        // When
         mockmvc.perform(post("/api/users/postuser").contentType(MediaType.APPLICATION_JSON)
-        .content(objectMapper.writeValueAsString(u1)))
-        
+                .content(objectMapper.writeValueAsString(u1)))
 
-        //Then 
-        .andExpect(status().isCreated())
-        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-        .andExpect(jsonPath("$.id").value(1L))
-        .andExpect(jsonPath("$.username").value("Nicolás"));
+                // Then
+                .andExpect(status().isCreated())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.id").value(1L))
+                .andExpect(jsonPath("$.username").value("Nicolás"));
 
         verify(userService).save(any());
         assertEquals("Nicolás", u1.getUsername());
@@ -143,10 +140,10 @@ public class ControllerTest {
 
         // When / Then - debe devolver 200 y el usuario eliminado
         mockmvc.perform(delete("/api/users/delete/1").contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath("$.username").value("Nicolás"))
-            .andExpect(jsonPath("$.id").value(1));
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.username").value("Nicolás"))
+                .andExpect(jsonPath("$.id").value(1));
 
         verify(userService).findById(1L);
         verify(userService).deleteById(1L);
@@ -159,7 +156,7 @@ public class ControllerTest {
 
         // When / Then - debe devolver 404
         mockmvc.perform(delete("/api/users/delete/99").contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound());
 
         verify(userService).findById(99L);
         verify(userService, never()).deleteById(anyLong());
@@ -176,21 +173,16 @@ public class ControllerTest {
         User u2 = new User();
         u2.setUsername("Yaiza");
         u2.setId(2L);
-        java.util.List<User> users = List.of(u1,u2);
+        java.util.List<User> users = List.of(u1, u2);
 
         doNothing().when(userService).deleteAll();
 
-        // When 
+        // When
         mockmvc.perform(delete("/api/users/delete").contentType(MediaType.APPLICATION_JSON))
-        .andExpect(status().isNoContent());
+                .andExpect(status().isNoContent());
 
-        //Then
-        verify(userService).deleteAll();   
+        // Then
+        verify(userService).deleteAll();
     }
-
-    
-
-    
-    
 
 }

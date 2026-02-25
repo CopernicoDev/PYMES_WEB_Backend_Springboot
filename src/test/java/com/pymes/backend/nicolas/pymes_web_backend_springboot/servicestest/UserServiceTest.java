@@ -17,8 +17,7 @@ import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-
-public class ServiceTest {
+public class UserServiceTest {
 
     UserRepository userRepository;
 
@@ -42,7 +41,7 @@ public class ServiceTest {
         User u2 = new User();
         u2.setUsername("Yaiza");
         u2.setId(2L);
-        java.util.List<User> users = List.of(u1,u2);
+        java.util.List<User> users = List.of(u1, u2);
 
         // When
         when(userRepository.findAllUsers()).thenReturn(users);
@@ -55,7 +54,6 @@ public class ServiceTest {
         assertEquals("Nicolás", result.get(0).getUsername());
         verify(userRepository).findAllUsers();
 
-        
     }
 
     @Test
@@ -68,18 +66,18 @@ public class ServiceTest {
         User u2 = new User();
         u2.setUsername("Yaiza");
         u2.setId(2L);
-        java.util.List<User> users = List.of(u1,u2);
+        java.util.List<User> users = List.of(u1, u2);
 
-        //When
+        // When
         when(userRepository.findById(1L)).thenReturn(Optional.of(u1));
 
         Optional<User> result = userService.findById(1L);
 
-        //Then 
+        // Then
         assertTrue(result.isPresent());
         assertEquals("Nicolás", result.get().getUsername());
         verify(userRepository).findById(1L);
-        
+
     }
 
     @Test
@@ -97,7 +95,8 @@ public class ServiceTest {
     @Test
     void testSave() {
         // Given - usuario existente
-        User toSave = new User(); toSave.setUsername("Nuevo");
+        User toSave = new User();
+        toSave.setUsername("Nuevo");
 
         // When
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
@@ -116,23 +115,23 @@ public class ServiceTest {
 
     @Test
     void testDeleteById() {
-        //When 
+        // When
         doNothing().when(userRepository).deleteById(1L);
 
         userService.deleteById(1L);
 
-        //Then
+        // Then
         verify(userRepository).deleteById(1L);
     }
 
     @Test
     void testDeleteAll() {
-        //When
+        // When
         doNothing().when(userRepository).deleteAll();
 
         userService.deleteAll();
 
-        //Then
+        // Then
         verify(userRepository).deleteAll();
     }
 

@@ -60,4 +60,34 @@ public class RoleServiceTest {
 
     }
 
+    @Test
+    void testFindById() {
+        // Given - rol existente
+        Role r1 = new Role();
+        r1.setRolname("admin");
+        r1.setId(1L);
+
+        Role r2 = new Role();
+        r2.setRolname("user");
+        r2.setId(2L);
+        java.util.List<Role> roles = List.of(r1, r2);
+
+        // When
+        when(roleRepository.findById(1L)).thenReturn(Optional.of(r1));
+        when(roleRepository.findById(2L)).thenReturn(Optional.of(r2));
+
+        Optional<Role> result = roleService.findById(1L);
+        Optional<Role> result2 = roleService.findById(2L);
+
+        // Then
+        assertTrue(result.isPresent());
+        assertEquals("admin", result.get().getRolname());
+        verify(roleRepository).findById(1L);
+
+        assertTrue(result2.isPresent());
+        assertEquals("user", result2.get().getRolname());
+        verify(roleRepository).findById(2L);
+
+    }
+
 }

@@ -18,4 +18,8 @@ public interface RoleRepository extends CrudRepository<Role, Long> {
 
     Optional<Role> findById(Long id);
 
+    void deleteById(Long id);
+
+    void deleteAll();
+
 }

@@ -16,6 +16,10 @@ public class RoleServiceImpl implements RoleService {
     @Autowired
     private RoleRepository repository;
 
+    public RoleServiceImpl(RoleRepository repository) {
+        this.repository = repository;
+    }
+
     @Override
     @Transactional(readOnly = true)
     public Optional<Role> findByRolname(String rolname) {

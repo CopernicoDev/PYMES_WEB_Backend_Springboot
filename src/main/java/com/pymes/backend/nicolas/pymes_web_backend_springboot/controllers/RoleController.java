@@ -29,7 +29,7 @@ public class RoleController {
         return roleService.findAll();
     }
 
-    @GetMapping("/search/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<?> view(@PathVariable Long id) {
         Optional<Role> roleOptional = roleService.findById(id);
         if (roleOptional.isPresent()) {
@@ -38,12 +38,12 @@ public class RoleController {
         return ResponseEntity.notFound().build();
     }
 
-    @PostMapping("/postrole")
+    @PostMapping
     public ResponseEntity<Role> save(@RequestBody Role role) {
         return ResponseEntity.status(HttpStatus.CREATED).body(roleService.save(role));
     }
 
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteById(@PathVariable Long id) {
         Optional<Role> roleOptional = roleService.findById(id); // Verificar si el rol existe
         if (roleOptional.isPresent()) {
@@ -54,7 +54,7 @@ public class RoleController {
         }
     }
 
-    @DeleteMapping("/delete")
+    @DeleteMapping
     public ResponseEntity<?> deleteAll() {
         roleService.deleteAll();
         return ResponseEntity.noContent().build();

@@ -19,9 +19,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-
-
-
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
@@ -30,26 +27,26 @@ public class UserController {
     private UserService userService;
 
     @GetMapping
-    public List<User> getAllUsers(){
+    public List<User> getAllUsers() {
         return userService.findAllUsers();
     }
 
-    @GetMapping("/search/{id}")
-    public ResponseEntity<?> view(@PathVariable Long id){
+    @GetMapping("/{id}")
+    public ResponseEntity<?> view(@PathVariable Long id) {
         Optional<User> userOptional = userService.findById(id);
-        if(userOptional.isPresent()){
+        if (userOptional.isPresent()) {
             return ResponseEntity.ok(userOptional.orElseThrow());
         }
         return ResponseEntity.notFound().build();
     }
 
-    @PostMapping("/postuser")
+    @PostMapping()
     public ResponseEntity<User> save(@RequestBody User user) {
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.save(user));
     }
 
-    @DeleteMapping("/delete/{id}")
-     public ResponseEntity<?> deleteById(@PathVariable Long id){
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteById(@PathVariable Long id) {
         Optional<User> userOptional = userService.findById(id); // Verificar si el usuario existe
         if (userOptional.isPresent()) {
             userService.deleteById(id); // Eliminar el usuario usando el ID
@@ -57,16 +54,12 @@ public class UserController {
         } else {
             return ResponseEntity.notFound().build(); // Retornar 404 si no se encuentra
         }
-     }
+    }
 
-     @DeleteMapping("/delete")
+    @DeleteMapping()
     public ResponseEntity<?> deleteAll() {
         userService.deleteAll();
         return ResponseEntity.noContent().build();
     }
-
-
-
-    
 
 }

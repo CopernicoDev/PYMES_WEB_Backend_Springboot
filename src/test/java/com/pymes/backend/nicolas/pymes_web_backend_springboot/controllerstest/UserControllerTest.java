@@ -13,7 +13,6 @@ import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -22,7 +21,8 @@ import com.pymes.backend.nicolas.pymes_web_backend_springboot.controllers.UserCo
 import com.pymes.backend.nicolas.pymes_web_backend_springboot.models.User;
 import com.pymes.backend.nicolas.pymes_web_backend_springboot.services.UserService;
 
-import tools.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 
 @WebMvcTest(UserController.class)
 public class UserControllerTest {

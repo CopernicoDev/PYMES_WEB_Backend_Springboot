@@ -12,7 +12,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.pymes.backend.nicolas.pymes_web_backend_springboot.dto.UserDTO.UserRequestDto;
 import com.pymes.backend.nicolas.pymes_web_backend_springboot.dto.UserDTO.UserResponseDto;
+import com.pymes.backend.nicolas.pymes_web_backend_springboot.models.Role;
 import com.pymes.backend.nicolas.pymes_web_backend_springboot.models.User;
+import com.pymes.backend.nicolas.pymes_web_backend_springboot.services.RoleService;
 import com.pymes.backend.nicolas.pymes_web_backend_springboot.services.UserService;
 
 import jakarta.validation.Valid;
@@ -20,7 +22,6 @@ import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -30,6 +31,9 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private RoleService roleService;
 
     @GetMapping
     public List<UserResponseDto> getAllUsers() {
@@ -55,6 +59,18 @@ public class UserController {
         user.setUsername(userDto.username());
         user.setEmail(userDto.email());
         user.setPassword(userDto.password());
+        // Si el frontend envía "ROLE_ADMIN" o "ROLE_USER"
+        if (userDto.roles() != null) {
+            for (String rolName : userDto.roles()) {
+                // 1. Buscamos el rol real en la base de datos
+                Optional<Role> roleOpt = roleService.findByRolname(rolName);
+
+                // 2. Si existe en la BD, lo añadimos al usuario
+                if (roleOpt.isPresent()) {
+                    user.addRole(roleOpt.get());
+                }
+            }
+        }
 
         // 2. Guardamos la entidad en la base de datos
         User savedUser = userService.save(user);

@@ -3,6 +3,8 @@ package com.pymes.backend.nicolas.pymes_web_backend_springboot.controllers;
 import java.util.List;
 
 import java.util.Optional;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.pymes.backend.nicolas.pymes_web_backend_springboot.dto.RoleDTO.RoleResponseDto;
 import com.pymes.backend.nicolas.pymes_web_backend_springboot.models.Role;
 import com.pymes.backend.nicolas.pymes_web_backend_springboot.services.RoleService;
 
@@ -25,32 +28,37 @@ public class RoleController {
     private RoleService roleService;
 
     @GetMapping
-    public List<Role> getAllRoles() {
-        return roleService.findAll();
+    public List<RoleResponseDto> getAllRoles() {
+        return roleService.findAll()
+                .stream()
+                .map(RoleResponseDto::fromEntity)
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> view(@PathVariable Long id) {
+    public ResponseEntity<RoleResponseDto> view(@PathVariable Long id) {
         Optional<Role> roleOptional = roleService.findById(id);
         if (roleOptional.isPresent()) {
-            return ResponseEntity.ok(roleOptional.orElseThrow());
+            return ResponseEntity.ok(RoleResponseDto.fromEntity(roleOptional.get()));
+        } else {
+            return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.notFound().build();
     }
 
     @PostMapping
-    public ResponseEntity<Role> save(@RequestBody Role role) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(roleService.save(role));
+    public ResponseEntity<RoleResponseDto> save(@RequestBody Role role) {
+        Role savedRole = roleService.save(role);
+        return ResponseEntity.status(HttpStatus.CREATED).body(RoleResponseDto.fromEntity(savedRole));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteById(@PathVariable Long id) {
-        Optional<Role> roleOptional = roleService.findById(id); // Verificar si el rol existe
+    public ResponseEntity<RoleResponseDto> deleteById(@PathVariable Long id) {
+        Optional<Role> roleOptional = roleService.findById(id);
         if (roleOptional.isPresent()) {
-            roleService.deleteById(id); // Eliminar el rol usando el ID
-            return ResponseEntity.ok(roleOptional.get()); // Retornar el rol eliminado
+            roleService.deleteById(id);
+            return ResponseEntity.ok(RoleResponseDto.fromEntity(roleOptional.get()));
         } else {
-            return ResponseEntity.notFound().build(); // Retornar 404 si no se encuentra
+            return ResponseEntity.notFound().build();
         }
     }
 
@@ -59,5 +67,4 @@ public class RoleController {
         roleService.deleteAll();
         return ResponseEntity.noContent().build();
     }
-
 }

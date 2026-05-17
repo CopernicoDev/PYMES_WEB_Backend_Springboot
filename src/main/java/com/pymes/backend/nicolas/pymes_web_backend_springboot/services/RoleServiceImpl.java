@@ -3,7 +3,6 @@ package com.pymes.backend.nicolas.pymes_web_backend_springboot.services;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,8 +12,7 @@ import com.pymes.backend.nicolas.pymes_web_backend_springboot.repositories.RoleR
 @Service
 public class RoleServiceImpl implements RoleService {
 
-    @Autowired
-    private RoleRepository repository;
+    private final RoleRepository repository;
 
     public RoleServiceImpl(RoleRepository repository) {
         this.repository = repository;

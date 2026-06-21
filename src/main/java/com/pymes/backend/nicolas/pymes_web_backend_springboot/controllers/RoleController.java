@@ -16,6 +16,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+// Importaciones de Spring Data
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 // --- Importaciones de nuestro proyecto ---
 import com.pymes.backend.nicolas.pymes_web_backend_springboot.dto.RoleDTO.RoleResponseDto;
 import com.pymes.backend.nicolas.pymes_web_backend_springboot.models.Role;
@@ -34,10 +38,13 @@ import com.pymes.backend.nicolas.pymes_web_backend_springboot.services.RoleServi
  *                 Mismo patrón que UserController ("/api/users") y
  *                 ServiceController ("/api/services").
  * 
- * Nota: A diferencia de UserController y ServiceController, este controller
- * recibe la entidad Role directamente en el POST (sin DTO de entrada).
- * Esto es porque Role es muy simple (solo tiene id y rolname).
- * En el futuro podrías crear un RoleRequestDto si necesitas validaciones.
+ *                 Nota: A diferencia de UserController y ServiceController,
+ *                 este controller
+ *                 recibe la entidad Role directamente en el POST (sin DTO de
+ *                 entrada).
+ *                 Esto es porque Role es muy simple (solo tiene id y rolname).
+ *                 En el futuro podrías crear un RoleRequestDto si necesitas
+ *                 validaciones.
  */
 @RestController
 @RequestMapping("/api/roles")
@@ -70,11 +77,9 @@ public class RoleController {
      * 4. .collect(Collectors.toList()) → volvemos a agrupar todo en una lista
      */
     @GetMapping
-    public List<RoleResponseDto> getAllRoles() {
-        return roleService.findAll()
-                .stream()
-                .map(RoleResponseDto::fromEntity)
-                .collect(Collectors.toList());
+    public Page<RoleResponseDto> getAllRoles(Pageable pageable) {
+        return roleService.findAll(pageable)
+                .map(RoleResponseDto::fromEntity);
     }
 
     // ==========================================

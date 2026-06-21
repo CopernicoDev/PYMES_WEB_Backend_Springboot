@@ -16,9 +16,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+// Importaciones de Spring Data
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 // --- Importaciones de nuestro proyecto ---
 import com.pymes.backend.nicolas.pymes_web_backend_springboot.dto.ServiceDTO.ServiceRequestDto;
 import com.pymes.backend.nicolas.pymes_web_backend_springboot.dto.ServiceDTO.ServiceResponseDto;
+import com.pymes.backend.nicolas.pymes_web_backend_springboot.models.Service;
 import com.pymes.backend.nicolas.pymes_web_backend_springboot.models.User;
 import com.pymes.backend.nicolas.pymes_web_backend_springboot.services.ServiceService;
 import com.pymes.backend.nicolas.pymes_web_backend_springboot.services.UserService;
@@ -79,11 +84,9 @@ public class ServiceController {
      * - Control: elegimos exactamente qué datos ve el frontend
      */
     @GetMapping
-    public List<ServiceResponseDto> getAllServices() {
-        return serviceService.findAll()
-                .stream()
-                .map(ServiceResponseDto::fromEntity)
-                .collect(Collectors.toList());
+    public Page<ServiceResponseDto> getAllServices(Pageable pageable) {
+        return serviceService.findAll(pageable)
+                .map(ServiceResponseDto::fromEntity);
     }
 
     // ==========================================
@@ -103,7 +106,7 @@ public class ServiceController {
     @GetMapping("/{id}")
     public ResponseEntity<ServiceResponseDto> view(@PathVariable Long id) {
         // findById devuelve Optional: puede tener valor o estar vacío
-        Optional<com.pymes.backend.nicolas.pymes_web_backend_springboot.models.Service> serviceOptional = serviceService
+        Optional<Service> serviceOptional = serviceService
                 .findById(id);
 
         if (serviceOptional.isPresent()) {
@@ -140,7 +143,7 @@ public class ServiceController {
     public ResponseEntity<ServiceResponseDto> save(@Valid @RequestBody ServiceRequestDto serviceDto) {
 
         // PASO 1: Creamos una entidad Service vacía y le asignamos los datos del DTO
-        com.pymes.backend.nicolas.pymes_web_backend_springboot.models.Service service = new com.pymes.backend.nicolas.pymes_web_backend_springboot.models.Service();
+        Service service = new Service();
         service.setServicename(serviceDto.servicename());
         service.setDescription(serviceDto.description());
         service.setPrice(serviceDto.price());
@@ -163,7 +166,7 @@ public class ServiceController {
 
         // PASO 3: Guardamos en la base de datos.
         // .save() de JPA hace INSERT si es nuevo o UPDATE si ya tiene ID.
-        com.pymes.backend.nicolas.pymes_web_backend_springboot.models.Service savedService = serviceService
+        Service savedService = serviceService
                 .save(service);
 
         // PASO 4: Devolvemos el servicio guardado como DTO con código 201 CREATED.
@@ -188,7 +191,7 @@ public class ServiceController {
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<ServiceResponseDto> deleteById(@PathVariable Long id) {
-        Optional<com.pymes.backend.nicolas.pymes_web_backend_springboot.models.Service> serviceOptional = serviceService
+        Optional<Service> serviceOptional = serviceService
                 .findById(id);
 
         if (serviceOptional.isPresent()) {

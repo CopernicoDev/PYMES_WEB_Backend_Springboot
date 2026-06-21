@@ -4,6 +4,10 @@ package com.pymes.backend.nicolas.pymes_web_backend_springboot.services;
 import java.util.List;
 import java.util.Optional;
 
+// --- Importaciones de Spring Data ---
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 // Importamos nuestra entidad Service (el modelo de la base de datos)
 import com.pymes.backend.nicolas.pymes_web_backend_springboot.models.Service;
 
@@ -35,4 +39,6 @@ public interface ServiceService {
 
     // Elimina todos los servicios
     void deleteAll();
+
+    Page<Service> findAll(Pageable pageable);
 }

@@ -11,6 +11,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+// Importaciones de Spring Data
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 // --- Importaciones de nuestro proyecto ---
 import com.pymes.backend.nicolas.pymes_web_backend_springboot.dto.UserDTO.UserRequestDto;
 import com.pymes.backend.nicolas.pymes_web_backend_springboot.dto.UserDTO.UserResponseDto;
@@ -81,12 +85,35 @@ public class UserController {
      * - Seguridad: no exponemos la CONTRASEÑA del usuario en el JSON
      * - Control: elegimos exactamente qué datos ve el frontend
      */
+    /**
+     * Obtiene usuarios de forma PAGINADA.
+     * 
+     * ¿Cómo funciona?
+     * Spring detecta el parámetro Pageable automáticamente y lo rellena
+     * a partir de los query params de la URL:
+     * GET /api/users?page=0&size=20 → página 0, 20 resultados
+     * GET /api/users?page=1&size=10 → página 1, 10 resultados
+     * GET /api/users?sort=username,asc → ordenado por nombre ascendente
+     * GET /api/users → valores por defecto (page=0, size=20)
+     * 
+     * La respuesta incluye metadatos de paginación:
+     * {
+     * "content": [ ... ], // los usuarios de esta página como DTOs
+     * "totalElements": 150, // total de usuarios en la BD
+     * "totalPages": 8, // total de páginas disponibles
+     * "number": 0, // número de la página actual
+     * "size": 20, // tamaño de la página
+     * "first": true, // ¿es la primera página?
+     * "last": false // ¿es la última página?
+     * }
+     * 
+     * Page.map() transforma cada User a UserResponseDto DENTRO del objeto Page,
+     * conservando todos los metadatos de paginación automáticamente.
+     */
     @GetMapping
-    public List<UserResponseDto> getAllUsers() {
-        return userService.findAllUsers()
-                .stream()
-                .map(UserResponseDto::fromEntity)
-                .collect(Collectors.toList());
+    public Page<UserResponseDto> getAllUsers(Pageable pageable) {
+        return userService.findAllUsers(pageable)
+                .map(UserResponseDto::fromEntity);
     }
 
     // ==========================================

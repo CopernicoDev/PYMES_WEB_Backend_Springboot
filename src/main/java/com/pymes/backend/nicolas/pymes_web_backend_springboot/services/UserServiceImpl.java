@@ -10,6 +10,11 @@ import java.util.Optional;
 // NO es nuestra entidad User del paquete models. Comparten tipo pero son cosas distintas.
 import org.springframework.stereotype.Service;
 
+// --- Importación de Spring Data ---
+// Pageable y Page son las clases de Spring para paginación.
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
 // @Transactional gestiona las transacciones de base de datos automáticamente.
 // Si algo falla dentro del método, hace rollback (deshace los cambios).
 import org.springframework.transaction.annotation.Transactional;
@@ -48,17 +53,20 @@ public class UserServiceImpl implements UserService {
      * Obtiene TODOS los usuarios de la base de datos.
      * 
      * @Transactional(readOnly = true) le dice a Hibernate:
-     *     "esta operación solo LEE datos, no modifica nada".
-     *     Esto permite a Hibernate optimizar la consulta
-     *     (no necesita preparar un flush ni tracking de cambios).
+     *                         "esta operación solo LEE datos, no modifica nada".
+     *                         Esto permite a Hibernate optimizar la consulta
+     *                         (no necesita preparar un flush ni tracking de
+     *                         cambios).
      * 
-     * Usa el método personalizado findAllUsers() del repositorio
-     * que devuelve List directamente (en vez del Iterable de CrudRepository).
+     *                         Usa el método personalizado findAllUsers() del
+     *                         repositorio
+     *                         que devuelve List directamente (en vez del Iterable
+     *                         de CrudRepository).
      */
     @Override
     @Transactional(readOnly = true)
     public List<User> findAllUsers() {
-        return (List<User>) userRepository.findAllUsers();
+        return (List<User>) userRepository.findAllWithRoles();
     }
 
     /**
@@ -99,6 +107,21 @@ public class UserServiceImpl implements UserService {
     @Override
     public void deleteAll() {
         userRepository.deleteAll();
+    }
+
+    /**
+     * Versión PAGINADA de findAllUsers.
+     * Delega al JpaRepository que ahora soporta findAll(Pageable).
+     * 
+     * El Pageable contiene:
+     * - page: número de página (empieza en 0)
+     * - size: cuántos elementos por página
+     * - sort: ordenación (ej: "username,asc")
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public Page<User> findAllUsers(Pageable pageable) {
+        return userRepository.findAll(pageable);
     }
 
 }

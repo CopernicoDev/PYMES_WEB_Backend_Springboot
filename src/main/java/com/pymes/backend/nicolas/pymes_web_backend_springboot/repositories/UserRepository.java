@@ -1,11 +1,25 @@
 package com.pymes.backend.nicolas.pymes_web_backend_springboot.repositories;
 
-// --- Importaciones estándar de Java ---
-import java.util.ArrayList;
+// --- Importaciones de Spring Data ---
+// JpaRepository es la evolución de CrudRepository. Incluye TODO lo que tiene
+// CrudRepository MÁS estas ventajas:
+// - findAll() devuelve List directamente (no Iterable)
+// - findAll(Pageable) para paginación automática
+// - findAll(Sort) para ordenación
+// - flush(), saveAndFlush() para control del EntityManager
+import org.springframework.data.jpa.repository.JpaRepository;
+
+// @Query nos permite escribir consultas JPQL personalizadas.
+// JPQL es como SQL pero opera sobre entidades Java, no sobre tablas SQL.
+import org.springframework.data.jpa.repository.Query;
+
 import java.util.List;
 
-// --- Importación de Spring Data ---
-import org.springframework.data.repository.CrudRepository;
+// Pageable y Page son las clases de Spring para paginación.
+// Pageable: contiene la info de la página solicitada (número, tamaño, orden).
+// Page: contiene los resultados + metadatos (total de páginas, total de elementos, etc.)
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 // --- Importación de nuestro modelo ---
 import com.pymes.backend.nicolas.pymes_web_backend_springboot.models.User;
@@ -13,44 +27,74 @@ import com.pymes.backend.nicolas.pymes_web_backend_springboot.models.User;
 /**
  * Repositorio para acceder a la tabla "users" en la base de datos.
  * 
- * Extiende CrudRepository<User, Long> donde:
- * - User: la entidad JPA que gestiona este repositorio.
- * - Long: el tipo de dato de la clave primaria (id) de User.
+ * CAMBIO: Migramos de CrudRepository a JpaRepository.
  * 
- * CrudRepository nos da GRATIS (sin escribir código) estos métodos:
- * - save(User) → INSERT o UPDATE
- * - findById(Long) → SELECT WHERE id = ?
- * - findAll() → SELECT * (devuelve Iterable, no List)
- * - deleteById(Long) → DELETE WHERE id = ?
- * - deleteAll() → DELETE FROM users
- * - count() → SELECT COUNT(*)
- * - existsById(Long) → comprueba si existe
+ * ¿Por qué JpaRepository en vez de CrudRepository?
+ * - JpaRepository HEREDA de CrudRepository (tiene todo lo que tenía antes)
+ * - ADEMÁS hereda de PagingAndSortingRepository (paginación y ordenación)
+ * - Y añade métodos propios como flush() y saveAndFlush()
+ * - findAll() ya devuelve List<User> directamente (no necesitamos el truco
+ * del método findAllUsers() que teníamos antes)
  * 
- * Spring crea la implementación automáticamente en tiempo de ejecución.
- * No necesitas escribir SQL ni crear una clase que implemente esta interfaz.
- * 
- * Es el mismo patrón que ServiceRepository y RoleRepository.
+ * Jerarquía: JpaRepository → PagingAndSortingRepository → CrudRepository
  */
-public interface UserRepository extends CrudRepository<User, Long> {
+public interface UserRepository extends JpaRepository<User, Long> {
 
 	/**
-	 * Método personalizado que convierte Iterable a List.
+	 * CONSULTA OPTIMIZADA: Trae todos los usuarios CON sus roles en UNA SOLA
+	 * consulta.
 	 * 
-	 * CrudRepository.findAll() devuelve Iterable<User>, pero en los Controllers
-	 * y Services trabajamos con List<User> (más cómodo para transformar con streams).
+	 * ¿Qué es el problema N+1?
+	 * Sin JOIN FETCH, Hibernate hace:
+	 * 1 consulta: SELECT * FROM users (trae 100 usuarios)
+	 * 100 consultas: SELECT * FROM user_roles WHERE user_id = ? (una por cada
+	 * usuario)
+	 * Total: 101 consultas para una sola petición GET.
 	 * 
-	 * Este método default (implementado directamente en la interfaz):
-	 * 1. Crea una lista vacía
-	 * 2. Itera sobre todos los usuarios del findAll() original
-	 * 3. Los añade uno a uno a la lista con forEach + referencia de método
+	 * Con JOIN FETCH:
+	 * 1 sola consulta: SELECT u.*, r.* FROM users u
+	 * LEFT JOIN user_roles ur ON u.id = ur.user_id
+	 * LEFT JOIN roles r ON ur.role_id = r.id
+	 * Total: 1 consulta. Muchísimo más rápido.
 	 * 
-	 * Es un truco necesario porque CrudRepository no devuelve List directamente
-	 * (a diferencia de JpaRepository que sí lo hace).
+	 * "LEFT JOIN FETCH u.roles" le dice a Hibernate:
+	 * "Cuando traigas los usuarios, trae TAMBIÉN sus roles en la misma consulta".
+	 * LEFT JOIN asegura que traiga usuarios incluso si no tienen roles asignados.
+	 * 
+	 * "SELECT DISTINCT u" evita usuarios duplicados cuando un usuario tiene
+	 * múltiples roles (el JOIN genera una fila por cada combinación user-role).
 	 */
-	default List<User> findAllUsers() {
-		List<User> users = new ArrayList<>();
-		findAll().forEach(users::add);
-		return users;
-	}
+	@Query("SELECT DISTINCT u FROM User u LEFT JOIN FETCH u.roles")
+	List<User> findAllWithRoles();
 
+	/**
+	 * VERSIÓN PAGINADA: Trae usuarios de forma paginada.
+	 * 
+	 * ¿Por qué paginación?
+	 * Si tienes 10.000 usuarios, no tiene sentido traerlos todos de golpe.
+	 * Con paginación, traes solo los que necesitas (ej: 20 por página).
+	 * 
+	 * Spring detecta el parámetro Pageable automáticamente y genera:
+	 * SELECT * FROM users LIMIT ? OFFSET ?
+	 * 
+	 * El frontend puede pedir:
+	 * GET /api/users?page=0&size=20 → primera página, 20 resultados
+	 * GET /api/users?page=1&size=20 → segunda página, 20 resultados
+	 * GET /api/users?page=0&size=20&sort=username,asc → ordenado por nombre
+	 * 
+	 * Page<User> devuelve no solo los datos, sino también metadatos:
+	 * {
+	 * "content": [...], // los usuarios de esta página
+	 * "totalElements": 150, // total de usuarios en la BD
+	 * "totalPages": 8, // total de páginas
+	 * "number": 0, // página actual
+	 * "size": 20 // tamaño de página
+	 * }
+	 * 
+	 * NOTA: No usamos JOIN FETCH aquí porque JPA no permite JOIN FETCH + Pageable
+	 * en la misma query (genera un error). Para la paginación, Hibernate hará
+	 * las queries extra, pero eso es aceptable porque solo carga una página (20
+	 * items).
+	 */
+	Page<User> findAll(Pageable pageable);
 }

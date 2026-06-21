@@ -9,14 +9,21 @@ import java.util.Optional;
 // Spring la detectará automáticamente y la inyectará donde se necesite.
 // OJO: esta anotación @Service es de Spring (org.springframework.stereotype.Service),
 // NO es nuestra entidad Service del paquete models. Comparten nombre pero son cosas distintas.
-import org.springframework.stereotype.Service;
+//import org.springframework.stereotype.Service;
 
 // @Transactional gestiona las transacciones de base de datos automáticamente.
 // Si algo falla dentro del método, hace rollback (deshace los cambios).
 import org.springframework.transaction.annotation.Transactional;
 
+// --- Importación de Spring Data ---
+// Pageable y Page son las clases de Spring para paginación.
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 // Nuestro repositorio que habla directamente con la base de datos
 import com.pymes.backend.nicolas.pymes_web_backend_springboot.repositories.ServiceRepository;
+// Importamos la entidad Service (con el nombre completo para evitar conflictos)
+import com.pymes.backend.nicolas.pymes_web_backend_springboot.models.Service;
 
 /**
  * Implementación concreta de ServiceService.
@@ -28,7 +35,7 @@ import com.pymes.backend.nicolas.pymes_web_backend_springboot.repositories.Servi
  * - "Solo el owner puede eliminar su servicio"
  * - "Enviar notificación cuando se crea un servicio"
  */
-@Service // Le dice a Spring: "esta clase es un servicio, regístrala como bean"
+@org.springframework.stereotype.Service // Le dice a Spring: "esta clase es un servicio, regístrala como bean"
 public class ServiceServiceImpl implements ServiceService {
 
     // Inyección por constructor (mismo patrón que tu UserServiceImpl).
@@ -51,11 +58,11 @@ public class ServiceServiceImpl implements ServiceService {
      */
     @Override
     @Transactional(readOnly = true)
-    public List<com.pymes.backend.nicolas.pymes_web_backend_springboot.models.Service> findAll() {
+    public List<Service> findAll() {
         // CrudRepository.findAll() devuelve Iterable, no List.
         // Por eso lo convertimos manualmente a ArrayList.
         // (Es el mismo truco que usas en UserRepository.findAllUsers())
-        List<com.pymes.backend.nicolas.pymes_web_backend_springboot.models.Service> services = new ArrayList<>();
+        List<Service> services = new ArrayList<>();
         serviceRepository.findAll().forEach(services::add);
         return services;
     }
@@ -67,7 +74,7 @@ public class ServiceServiceImpl implements ServiceService {
      */
     @Override
     @Transactional(readOnly = true)
-    public Optional<com.pymes.backend.nicolas.pymes_web_backend_springboot.models.Service> findById(Long id) {
+    public Optional<Service> findById(Long id) {
         return serviceRepository.findById(id);
     }
 
@@ -78,8 +85,8 @@ public class ServiceServiceImpl implements ServiceService {
      */
     @Override
     @Transactional // Sin readOnly porque MODIFICA datos
-    public com.pymes.backend.nicolas.pymes_web_backend_springboot.models.Service save(
-            com.pymes.backend.nicolas.pymes_web_backend_springboot.models.Service service) {
+    public Service save(
+            Service service) {
         return serviceRepository.save(service);
     }
 
@@ -99,5 +106,20 @@ public class ServiceServiceImpl implements ServiceService {
     @Transactional
     public void deleteAll() {
         serviceRepository.deleteAll();
+    }
+
+    /**
+     * Versión PAGINADA de findAll.
+     * Delega al JpaRepository que ahora soporta findAll(Pageable).
+     * 
+     * El Pageable contiene:
+     * - page: número de página (empieza en 0)
+     * - size: cuántos elementos por página
+     * - sort: ordenación (ej: "price,desc")
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public Page<Service> findAll(Pageable pageable) {
+        return serviceRepository.findAll(pageable);
     }
 }

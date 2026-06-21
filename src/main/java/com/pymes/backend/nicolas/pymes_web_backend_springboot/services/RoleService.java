@@ -7,16 +7,22 @@ import java.util.Optional;
 // --- Importación de nuestro modelo ---
 import com.pymes.backend.nicolas.pymes_web_backend_springboot.models.Role;
 
+// Importación de Spring Data
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 /**
  * Interfaz que define el CONTRATO de operaciones disponibles para Role.
  * 
  * ¿Por qué una interfaz y no directamente la clase?
- * - Desacoplamiento: el Controller depende del contrato, no de la implementación.
+ * - Desacoplamiento: el Controller depende del contrato, no de la
+ * implementación.
  * - Testeabilidad: en tests puedes crear un mock que implemente esta interfaz.
  * - Flexibilidad: podrías tener varias implementaciones (ej: una con caché).
  * 
  * Este servicio tiene más métodos que UserService y ServiceService porque
- * los roles necesitan búsquedas especiales (por nombre, por lista de nombres, etc.)
+ * los roles necesitan búsquedas especiales (por nombre, por lista de nombres,
+ * etc.)
  * que se usan al asignar roles a usuarios.
  * 
  * Es el mismo patrón que UserService y ServiceService.
@@ -53,5 +59,8 @@ public interface RoleService {
 
     // Elimina todos los roles
     void deleteAll();
+
+    // Paginación
+    Page<Role> findAll(Pageable pageable);
 
 }

@@ -16,6 +16,10 @@ import org.springframework.transaction.annotation.Transactional;
 import com.pymes.backend.nicolas.pymes_web_backend_springboot.models.Role;
 import com.pymes.backend.nicolas.pymes_web_backend_springboot.repositories.RoleRepository;
 
+//Importación de Spring Data
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 /**
  * Implementación concreta de RoleService.
  * 
@@ -136,5 +140,15 @@ public class RoleServiceImpl implements RoleService {
     @Transactional(readOnly = true)
     public Optional<Role> findById(Long id) {
         return repository.findById(id);
+    }
+
+    /**
+     * Busca roles de forma paginada.
+     * Spring genera automáticamente las queries para paginación.
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public Page<Role> findAll(Pageable pageable) {
+        return repository.findAll(pageable);
     }
 }

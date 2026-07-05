@@ -14,6 +14,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 
 // Pageable y Page son las clases de Spring para paginación.
 // Pageable: contiene la info de la página solicitada (número, tamaño, orden).
@@ -66,6 +67,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 	 */
 	@Query("SELECT DISTINCT u FROM User u LEFT JOIN FETCH u.roles")
 	List<User> findAllWithRoles();
+
+	Optional<User> findByEmail(String email);
 
 	/**
 	 * VERSIÓN PAGINADA: Trae usuarios de forma paginada.

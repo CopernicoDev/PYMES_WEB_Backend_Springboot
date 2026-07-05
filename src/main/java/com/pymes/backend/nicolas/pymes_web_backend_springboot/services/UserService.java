@@ -45,6 +45,8 @@ public interface UserService {
     // Elimina todos los usuarios
     void deleteAll();
 
+    Optional<User> findByEmail(String email);
+
     Page<User> findAllUsers(Pageable pageable);
 
 }

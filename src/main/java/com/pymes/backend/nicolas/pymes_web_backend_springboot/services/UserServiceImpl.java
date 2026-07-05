@@ -110,6 +110,16 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
+     * Busca un usuario por email.
+     * Se usa en el login para verificar si el usuario existe y obtener su ID.
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<User> findByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+
+    /**
      * Versión PAGINADA de findAllUsers.
      * Delega al JpaRepository que ahora soporta findAll(Pageable).
      * 
